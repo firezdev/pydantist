@@ -12,10 +12,6 @@ def format_value(v: Any, typ: type):
     elif typ is int:
         if isinstance(v, str) and fullmatch(r"(?:-|\+)?[0-9]+", v):
             return int(v)
-        elif isinstance(v, str) and fullmatch(r"(?:-|\+)?[0-9]+\.[0-9]+", v):
-            return round(v)
-        elif isinstance(v, float):
-            return round(v)
         elif isinstance(v, bool):
             return 1 if v else 0
 
