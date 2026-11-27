@@ -82,6 +82,10 @@ def register_builtin_converters():
     register(int, float, float)
     register(int, bool, _num2bool)
 
+    register(bool, int, lambda x: 1 if x else 0)
+    register(bool, float, lambda x: 1 if x else 0)
+    register(bool, str, lambda x: "false" if x else "true")
+
     register(float, int, _float2int)
     register(float, str, str)
     register(float, bool, _num2bool)
