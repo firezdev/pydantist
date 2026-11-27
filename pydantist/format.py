@@ -55,7 +55,7 @@ def format_value(v: Any, dst: type[T]) -> T:
         return v
 
     full_dst = dst
-    dst = get_origin(dst) or dst  # only base type, e.g list insted list[int]
+    dst = get_origin(dst) or dst  # only base type, e.g list instead list[int]
 
     if converter := _registry.get(src, {}).get(dst):
         return converter(v, full_dst)
