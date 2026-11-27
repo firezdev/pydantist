@@ -1,4 +1,6 @@
+from datetime import date, datetime, time, timedelta
 from json import loads
+from math import isfinite
 from typing import Any, get_args
 
 from pydantist.format import format_value, register
@@ -70,6 +72,26 @@ def _float2int(x: float):
     raise ValueError("value must be whole integer")
 
 
+def _num2time(x: int | float):
+    if 0 <= x <= 86400:
+        return (datetime.min + timedelta(seconds=x)).time()
+    raise ValueError("value must be between 0 and 86400")
+
+
+def _num2datetime(v: float) -> datetime:
+    if not isfinite(v):
+        raise ValueError(f"timestamp must be a finite number, got {v!r}")
+
+    while abs(v) > 2e10:
+        v /= 1000
+
+    return datetime.fromtimestamp(v)
+
+
+def _num2date(v: float) -> date:
+    return _num2datetime(v).date()
+
+
 def register_builtin_converters():
     register(str, int, int)
     register(str, float, float)
@@ -77,10 +99,17 @@ def register_builtin_converters():
     register(str, list, _str2list)
     register(str, dict, _str2dict)
     register(str, bytes, lambda x: x.encode())
+    register(str, datetime, datetime.fromisoformat)
+    register(str, date, date.fromisoformat)
+    register(str, time, time.fromisoformat)
 
     register(int, str, str)
     register(int, float, float)
     register(int, bool, _num2bool)
+    register(int, datetime, _num2datetime)
+    register(int, date, _num2date)
+    register(int, time, _num2time)
+    register(int, timedelta, lambda x: timedelta(seconds=x))
 
     register(bool, int, lambda x: 1 if x else 0)
     register(bool, float, lambda x: 1 if x else 0)
@@ -89,6 +118,11 @@ def register_builtin_converters():
     register(float, int, _float2int)
     register(float, str, str)
     register(float, bool, _num2bool)
+    register(float, datetime, _num2datetime)
+    register(float, date, _num2date)
+    register(float, time, _num2time)
+    register(float, timedelta, lambda x: timedelta(seconds=x))
 
     register(list, list, _list2list)
+
     register(dict, dict, _dict2dict)
