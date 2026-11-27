@@ -1,44 +1,74 @@
-from enum import Enum
-from re import fullmatch
-from typing import Any
+from functools import wraps
+from inspect import signature
+from typing import Any, Callable, TypeVar, cast, get_origin
 
 from pydantist.exceptions import UnparseableError
 
+#               from       to    fmt-func  val  from   out
+_registry: dict[type, dict[type, Callable[[Any, type], Any]]] = {}
+_subclass_allowed: set[tuple[type, type]] = set()
 
-def format_value(v: Any, typ: type):
-    if isinstance(v, typ):
+
+def register(
+    src: type,
+    dst: type,
+    fn: Callable[[Any], Any] | Callable[[Any, type], Any],
+    *,
+    subclasses: bool = False
+) -> None:
+    try:
+        signature(fn).bind(None, None)
+
+    except (ValueError, TypeError):
+        fn = cast(Callable[[Any], Any], fn)
+
+        @wraps(fn)
+        def _fn(value, _):
+            return fn(value)
+
+    else:
+        _fn = cast(Callable[[Any, type], Any], fn)
+
+    _registry.setdefault(src, {})[dst] = _fn
+    if subclasses:
+        _subclass_allowed.add((src, dst))
+    else:
+        _subclass_allowed.discard((src, dst))
+
+
+T = TypeVar("T")
+
+
+def format_value(v: Any, dst: type[T]) -> T:
+    """
+    Convert v to dst type.
+
+    If dst is Any or type(v) is dst, value will return unchanged.
+
+    Converter search order:
+        1. By exact pair.
+        2. By nearest pair of MRO of src and dst. Converter must be registered with subclasses=True.
+    """
+    src = type(v)
+
+    if dst is Any or src is dst:
         return v
 
-    elif typ is int:
-        if isinstance(v, str) and fullmatch(r"(?:-|\+)?[0-9]+", v):
-            return int(v)
-        elif isinstance(v, bool):
-            return 1 if v else 0
+    full_dst = dst
+    dst = get_origin(dst) or dst  # only base type, e.g list insted list[int]
 
-    elif typ is float and isinstance(v, (str, int, float, bool)):
-        return float(v)
+    if converter := _registry.get(src, {}).get(dst):
+        return converter(v, full_dst)
 
-    elif typ is bool:
-        if isinstance(v, str):
-            if v.lower() in ("true", "t", "yes", "on", "+", "y", "1"):
-                return True
-            elif v.lower() in ("false", "f", "no", "off", "-", "n", "0"):
-                return False
+    for src_mro in src.__mro__:
+        # find converters for nearest src's mro
+        if converters := _registry.get(src_mro):
+            for dst_mro in dst.__mro__:
+                # find converters for nearest dst's mro (from converters that converts type of src)
+                # check is subclasses allowed in this converter
+                if (src_mro, dst_mro) in _subclass_allowed and (
+                    converter := converters.get(dst_mro)
+                ):
+                    return converter(v, full_dst)
 
-        elif isinstance(v, (float, int)):
-            if v == 0:
-                return False
-            elif v == 1:
-                return True
-
-        elif isinstance(v, (list, dict)):
-            return bool(v)
-
-    elif issubclass(typ, Enum):
-        return typ(v)
-
-    elif typ is str:
-        if isinstance(v, (int, float, list, dict, bool)):
-            return str(v)
-
-    raise UnparseableError(v, typ)
+    raise UnparseableError(v, full_dst)
