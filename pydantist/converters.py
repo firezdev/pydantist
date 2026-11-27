@@ -73,7 +73,7 @@ def _float2int(x: float):
 
 
 def _num2time(x: int | float):
-    if 0 <= x <= 86400:
+    if 0 <= x < 86400:
         return (datetime.min + timedelta(seconds=x)).time()
     raise ValueError("value must be between 0 and 86400")
 
@@ -112,8 +112,8 @@ def register_builtin_converters():
     register(int, timedelta, lambda x: timedelta(seconds=x))
 
     register(bool, int, lambda x: 1 if x else 0)
-    register(bool, float, lambda x: 1 if x else 0)
-    register(bool, str, lambda x: "false" if x else "true")
+    register(bool, float, lambda x: 1.0 if x else 0.0)
+    register(bool, str, lambda x: "true" if x else "false")
 
     register(float, int, _float2int)
     register(float, str, str)
