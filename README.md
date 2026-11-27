@@ -1,5 +1,6 @@
 # pydantist
 
+[![AI-DECLARATION: assist](https://img.shields.io/badge/䷼%20AI--DECLARATION-assist-fef9c3?labelColor=fef9c3)](https://ai-declaration.md)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![PyPI](https://img.shields.io/pypi/v/pydantist)](https://pypi.org/project/pydantist/)
@@ -34,7 +35,7 @@ print(user.active)  # False
 
 ## Key features
  - Set your own **`__init__`** - pydantist doesn't touch it
- - Lists item format - `list[int]` / `dict[str, float]`, nested `list[list[int]]`
+ - Typed containers - `list[int]` / `dict[str, float]`, nested like `list[list[int]]`
  - Custom converters registry - you can easily add your own type
  - Lightweight and zero dependencies - whole lib size is less than 10 KB
 
