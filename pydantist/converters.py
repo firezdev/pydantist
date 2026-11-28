@@ -1,4 +1,5 @@
 from datetime import date, datetime, time, timedelta
+from enum import Enum
 from json import loads
 from math import isfinite
 from typing import Any, get_args
@@ -102,6 +103,7 @@ def register_builtin_converters():
     register(str, datetime, datetime.fromisoformat)
     register(str, date, date.fromisoformat)
     register(str, time, time.fromisoformat)
+    register(str, Enum, lambda x, dst: dst(x), subclasses=True)
 
     register(int, str, str)
     register(int, float, float)
@@ -110,10 +112,12 @@ def register_builtin_converters():
     register(int, date, _num2date)
     register(int, time, _num2time)
     register(int, timedelta, lambda x: timedelta(seconds=x))
+    register(int, Enum, lambda x, dst: dst(x), subclasses=True)
 
     register(bool, int, lambda x: 1 if x else 0)
     register(bool, float, lambda x: 1.0 if x else 0.0)
     register(bool, str, lambda x: "true" if x else "false")
+    register(bool, Enum, lambda x, dst: dst(x), subclasses=True)
 
     register(float, int, _float2int)
     register(float, str, str)
@@ -122,7 +126,13 @@ def register_builtin_converters():
     register(float, date, _num2date)
     register(float, time, _num2time)
     register(float, timedelta, lambda x: timedelta(seconds=x))
+    register(float, Enum, lambda x, dst: dst(x), subclasses=True)
 
     register(list, list, _list2list)
 
     register(dict, dict, _dict2dict)
+
+    register(Enum, str, lambda x: x.value)
+    register(Enum, int, lambda x: x.value)
+    register(Enum, float, lambda x: x.value)
+    register(Enum, bool, lambda x: x.value)
