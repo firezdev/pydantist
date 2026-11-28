@@ -1,5 +1,6 @@
 from functools import wraps
 from inspect import signature
+from types import UnionType
 from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
 from pydantist.exceptions import UnparseableError
@@ -57,7 +58,7 @@ def format_value(v: Any, dst: type[T]) -> T:
     full_dst = dst
     dst = get_origin(dst) or dst  # only base type, e.g list instead list[int]
 
-    if dst is Union:
+    if dst is Union or dst is UnionType:
         args = get_args(full_dst)
         if src in args or Any in args:
             return v
