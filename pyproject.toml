@@ -1,6 +1,6 @@
 [project]
 name = "pydantist"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lightweight pydantic alternative"
 readme = "README.md"
 authors = [{ name = "firezdev", email = "nta16022013@gmail.com" }]

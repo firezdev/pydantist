@@ -4,7 +4,7 @@ from typing import Any, Callable, TypeVar, cast, get_origin
 
 from pydantist.exceptions import UnparseableError
 
-#               from       to    fmt-func  val  from   out
+#               from       to    converter val  from   out
 _registry: dict[type, dict[type, Callable[[Any, type], Any]]] = {}
 _subclass_allowed: set[tuple[type, type]] = set()
 
